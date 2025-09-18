@@ -1,0 +1,795 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Veículos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /*
+        ========================================
+        ESTILOS GERAIS
+        ========================================
+        */
+        :root {
+            --primary-color: #2c3e50; /* Azul escuro */
+            --secondary-color: #38b2ac; /* Verde-água moderno */
+            --background-color: #C8E6C9; /* COR DE FUNDO VERDE CLARO */
+            --card-background: #FFFFFF; /* CARTÕES BRANCOS */
+            --text-color: #2d3748; /* Cinza quase preto para o texto principal */
+            --light-text-color: #4a5568; /* Cinza para o texto secundário */
+            --border-color: #e2e8f0;
+            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.08);
+            --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /*
+        ========================================
+        CABEÇALHO
+        ========================================
+        */
+        header {
+            background-color: var(--primary-color);
+            color: white; /* Letras brancas no cabeçalho */
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-medium);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.1em;
+            flex-grow: 1;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .menu-toggle {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-toggle .bar {
+            width: 28px;
+            height: 2.5px;
+            background-color: white;
+            margin: 4px 0;
+            border-radius: 2px;
+            transition: 0.4s;
+        }
+
+        /*
+        ========================================
+        MENU LATERAL (SIDEBAR)
+        ========================================
+        */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: var(--primary-color);
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 6rem;
+            box-shadow: var(--shadow-medium);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.open {
+            width: 320px;
+        }
+
+        .sidebar-content {
+            padding: 2rem;
+            color: white; /* Letras brancas no menu */
+        }
+
+        .sidebar-content h2 {
+            margin-top: 0;
+            color: white; /* Título branco */
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .sidebar-content input, .sidebar-content button {
+            width: 100%;
+            padding: 0.85rem;
+            margin-bottom: 1rem;
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-content input {
+            background-color: #3a475a;
+            color: white; /* Texto do input branco */
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-content input::placeholder {
+            color: #a0aec0;
+        }
+
+        .sidebar-content input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.4);
+        }
+       
+        .sidebar-content textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .sidebar-content button {
+            background-color: var(--secondary-color);
+            color: var(--card-background);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border: none;
+        }
+
+        .sidebar-content button:hover {
+            background-color: #2c8c87;
+            transform: translateY(-2px);
+        }
+       
+        /*
+        ========================================
+        CONTEÚDO PRINCIPAL
+        ========================================
+        */
+        .content {
+            padding: 1.25rem;
+            transition: margin-left .5s;
+        }
+
+        .notification {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+            box-shadow: var(--shadow-light);
+        }
+       
+        .notification.success {
+            background-color: #48bb78;
+        }
+
+        .notification.info {
+            background-color: #4299e1;
+        }
+       
+        .notification.error {
+            background-color: #e53e3e;
+        }
+       
+        /*
+        ========================================
+        NOVAS REGRAS DE ESTILO
+        ========================================
+        */
+        .list-controls {
+            position: sticky; /* Contêiner fixo */
+            top: 4.5rem; /* Posicionado logo abaixo do cabeçalho */
+            z-index: 900;
+            background-color: var(--background-color);
+            padding-top: 0.5rem;
+        }
+
+        .search-container {
+            padding-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+       
+        .search-wrapper {
+            position: relative;
+            flex-grow: 1;
+            max-width: 450px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            padding-right: 2rem;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+       
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.4);
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: #a0aec0;
+            cursor: pointer;
+            line-height: 1;
+            display: none; /* Oculto por padrão */
+            transition: color 0.2s ease;
+        }
+       
+        .clear-search-btn:hover {
+            color: #718096;
+        }
+
+        .status-message {
+            color: #48bb78;
+            font-weight: 600;
+            display: none;
+            white-space: nowrap;
+            font-size: 1em;
+        }
+
+        /*
+        ========================================
+        FORMULÁRIO DE EDIÇÃO
+        ========================================
+        */
+        #edit-form-container {
+            background-color: var(--card-background);
+            padding: 1rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 1rem;
+            display: none;
+            max-width: 300px;
+            margin: 0 auto;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        #edit-form-container.show-form {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+       
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0.25rem;
+        }
+
+        #edit-form-container h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+       
+        #edit-form-container label {
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        #edit-form-container input, #edit-form-container button {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+       
+        #edit-form-container input {
+            background-color: #3a475a;
+            color: white;
+        }
+       
+        #edit-form-container input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.4);
+        }
+       
+        #edit-form-container button {
+            background-color: var(--secondary-color);
+            color: var(--card-background);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border: none;
+        }
+
+        #edit-form-container button:hover {
+            background-color: #2c8c87;
+            transform: translateY(-2px);
+        }
+       
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+       
+        .form-actions button {
+            flex-grow: 1;
+            margin-bottom: 0;
+        }
+       
+        #cancel-edit-btn {
+            background-color: #e53e3e;
+        }
+
+        #cancel-edit-btn:hover {
+            background-color: #c53030;
+        }
+
+        /*
+        ========================================
+        LISTA DE VEÍCULOS (CARTÕES)
+        ========================================
+        */
+        #vehicle-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .vehicle-item {
+            background-color: var(--card-background);
+            padding: 1rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .vehicle-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .vehicle-details {
+            display: flex;
+            flex-grow: 1;
+            gap: 1rem;
+            flex-wrap: nowrap;
+        }
+
+        .vehicle-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 70px;
+        }
+
+        .vehicle-info strong {
+            font-size: 0.8em;
+            color: #718096;
+            margin-bottom: 0.15rem;
+            font-weight: 500;
+        }
+
+        .vehicle-info span {
+            font-size: 1em;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .vehicle-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0;
+        }
+
+        .vehicle-actions button {
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem 0.8rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 0.8em;
+        }
+
+        .vehicle-actions .edit-btn {
+            background-color: #4299e1;
+        }
+
+        .vehicle-actions .edit-btn:hover {
+            background-color: #3182ce;
+        }
+
+        .vehicle-actions .delete-btn {
+            background-color: #e53e3e;
+        }
+
+        .vehicle-actions .delete-btn:hover {
+            background-color: #c53030;
+        }
+
+        /*
+        ========================================
+        MEDIA QUERIES (RESPONSIVIDADE)
+        ========================================
+        */
+        @media (max-width: 768px) {
+            .content {
+                padding: 0.5rem;
+            }
+           
+            header h1 {
+                font-size: 1.1em;
+            }
+
+            .vehicle-details {
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            .vehicle-actions {
+                margin-top: 0.5rem;
+                margin-left: 0;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="menu-toggle" onclick="toggleMenu()">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <h1>Veículos Autorizados</h1>
+    </header>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <h2>Cadastrar Veículo</h2>
+            <div id="add-notification" class="notification"></div>
+            <form id="add-vehicle-form">
+                <input type="text" id="add-placa" placeholder="Placa">
+                <input type="text" id="add-veiculo" placeholder="Veículo">
+                <input type="text" id="add-cor" placeholder="Cor">
+                <input type="text" id="add-nome" placeholder="Nome do Motorista">
+                <input type="text" id="add-departamento" placeholder="Departamento">
+                <div class="form-actions">
+                    <button type="submit" id="add-submit-btn">Cadastrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="content" id="main-content">
+        <div class="list-controls">
+            <div id="edit-form-container">
+                <h2>Editar Veículo</h2>
+                <div id="edit-notification" class="notification"></div>
+                <form id="edit-vehicle-form">
+                    <div class="form-group">
+                        <label for="edit-placa">Placa</label>
+                        <input type="text" id="edit-placa">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-veiculo">Veículo</label>
+                        <input type="text" id="edit-veiculo">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-cor">Cor</label>
+                        <input type="text" id="edit-cor">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-nome">Nome do Motorista</label>
+                        <input type="text" id="edit-nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-departamento">Departamento</label>
+                        <input type="text" id="edit-departamento">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="edit-submit-btn">Salvar Edição</button>
+                        <button type="button" id="cancel-edit-btn">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Pesquisar Placa / Nome...">
+                    <button id="clear-search-btn" class="clear-search-btn">&times;</button>
+                </div>
+                <span id="auth-message" class="status-message">AUTORIZADO</span>
+            </div>
+        </div>
+        <ul id="vehicle-list">
+        </ul>
+    </div>
+
+    <script>
+        // Lógica JavaScript para o aplicativo
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const editFormContainer = document.getElementById('edit-form-container');
+            const addForm = document.getElementById('add-vehicle-form');
+            const editForm = document.getElementById('edit-vehicle-form');
+            const addNotification = document.getElementById('add-notification');
+            const editNotification = document.getElementById('edit-notification');
+            const vehicleList = document.getElementById('vehicle-list');
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const authMessage = document.getElementById('auth-message');
+
+            const addPlacaInput = document.getElementById('add-placa');
+            const addVeiculoInput = document.getElementById('add-veiculo');
+            const addCorInput = document.getElementById('add-cor');
+            const addNomeInput = document.getElementById('add-nome');
+            const addDepartamentoInput = document.getElementById('add-departamento');
+
+            const editPlacaInput = document.getElementById('edit-placa');
+            const editVeiculoInput = document.getElementById('edit-veiculo');
+            const editCorInput = document.getElementById('edit-cor');
+            const editNomeInput = document.getElementById('edit-nome');
+            const editDepartamentoInput = document.getElementById('edit-departamento');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+           
+            let vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+            let editingIndex = null;
+
+            // Salva os dados no localStorage
+            const saveVehicles = () => {
+                localStorage.setItem('vehicles', JSON.stringify(vehicles));
+            };
+
+            // Função para alternar o menu
+            window.toggleMenu = () => {
+                sidebar.classList.toggle('open');
+            };
+
+            // Fechar o menu ao clicar fora dele
+            document.addEventListener('click', (event) => {
+                const isClickInsideMenu = sidebar.contains(event.target);
+                const isClickOnToggle = document.querySelector('.menu-toggle').contains(event.target);
+                if (!isClickInsideMenu && !isClickOnToggle && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            });
+
+            // Exibir mensagem de notificação
+            const showNotification = (message, type, targetElement) => {
+                targetElement.textContent = message;
+                targetElement.className = `notification ${type}`;
+                targetElement.style.display = 'block';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 3000);
+            };
+
+            // Adicionar novo veículo (no menu lateral)
+            addForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newVehicle = {
+                    placa: addPlacaInput.value.toUpperCase(),
+                    veiculo: addVeiculoInput.value,
+                    cor: addCorInput.value,
+                    nome: addNomeInput.value,
+                    departamento: addDepartamentoInput.value
+                };
+               
+                vehicles.push(newVehicle);
+                showNotification('Cadastrado com sucesso!', 'success', addNotification);
+                saveVehicles();
+                displayVehicles(vehicles);
+                addForm.reset();
+                // A linha `sidebar.classList.remove('open');` foi removida daqui
+            });
+
+            // Editar veículo (no formulário em cima da lista)
+            editForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const editedVehicle = {
+                    placa: editPlacaInput.value.toUpperCase(),
+                    veiculo: editVeiculoInput.value,
+                    cor: editCorInput.value,
+                    nome: editNomeInput.value,
+                    departamento: editDepartamentoInput.value
+                };
+
+                vehicles[editingIndex] = editedVehicle;
+                showNotification('Editado com sucesso!', 'info', editNotification);
+                saveVehicles();
+                displayVehicles(vehicles);
+                editForm.reset();
+                editingIndex = null;
+                editFormContainer.classList.remove('show-form');
+            });
+
+            // Função para normalizar strings (ignora acentos e case)
+            const normalizeString = (str) => {
+                return str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+            };
+
+            // Exibir a lista de veículos
+            const displayVehicles = (list) => {
+                // Organiza a lista de veículos por nome do motorista em ordem alfabética
+                list.sort((a, b) => {
+                    const nomeA = a.nome || '';
+                    const nomeB = b.nome || '';
+                    return nomeA.localeCompare(nomeB);
+                });
+               
+                vehicleList.innerHTML = '';
+                if (list.length === 0) {
+                    vehicleList.innerHTML = '<p style="text-align: center; color: #888;">Nenhum veículo cadastrado.</p>';
+                }
+                list.forEach((vehicle) => {
+                    const li = document.createElement('li');
+                    li.classList.add('vehicle-item');
+                    li.innerHTML = `
+                        <div class="vehicle-details">
+                            <div class="vehicle-info">
+                                <strong>Placa</strong>
+                                <span>${vehicle.placa || '-'}</span>
+                            </div>
+                            <div class="vehicle-info">
+                                <strong>Veículo</strong>
+                                <span>${vehicle.veiculo || '-'}</span>
+                            </div>
+                            <div class="vehicle-info">
+                                <strong>Cor</strong>
+                                <span>${vehicle.cor || '-'}</span>
+                            </div>
+                            <div class="vehicle-info">
+                                <strong>Motorista</strong>
+                                <span>${vehicle.nome || '-'}</span>
+                            </div>
+                            <div class="vehicle-info">
+                                <strong>Departamento</strong>
+                                <span>${vehicle.departamento || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="vehicle-actions">
+                            <button class="edit-btn" onclick="editVehicleByPlate('${vehicle.placa}')">Editar</button>
+                            <button class="delete-btn" onclick="deleteVehicleByPlate('${vehicle.placa}')">Excluir</button>
+                        </div>
+                    `;
+                    vehicleList.appendChild(li);
+                });
+            };
+
+            // Função de pesquisa
+            searchInput.addEventListener('input', (e) => {
+                const normalizedSearchTerm = normalizeString(e.target.value);
+                let filteredVehicles = [];
+
+                if (normalizedSearchTerm.length > 0) {
+                    filteredVehicles = vehicles.filter(vehicle =>
+                        normalizeString(vehicle.placa).includes(normalizedSearchTerm) ||
+                        normalizeString(vehicle.veiculo).includes(normalizedSearchTerm) ||
+                        normalizeString(vehicle.cor).includes(normalizedSearchTerm) ||
+                        normalizeString(vehicle.nome).includes(normalizedSearchTerm) ||
+                        normalizeString(vehicle.departamento).includes(normalizedSearchTerm)
+                    );
+                   
+                    const isAuthorized = vehicles.some(v => normalizeString(v.placa) === normalizedSearchTerm);
+                    authMessage.style.display = isAuthorized ? 'block' : 'none';
+                    clearSearchBtn.style.display = 'block';
+                } else {
+                    filteredVehicles = vehicles;
+                    authMessage.style.display = 'none';
+                    clearSearchBtn.style.display = 'none';
+                }
+
+                displayVehicles(filteredVehicles);
+            });
+           
+            // Limpar campo de pesquisa
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                displayVehicles(vehicles);
+                clearSearchBtn.style.display = 'none';
+                authMessage.style.display = 'none';
+            });
+
+            // Editar veículo usando a placa como identificador único
+            window.editVehicleByPlate = (placa) => {
+                if (confirm('Deseja continuar para a edição?')) {
+                    const index = vehicles.findIndex(v => v.placa === placa);
+                    if (index === -1) {
+                        showNotification('Veículo não encontrado.', 'error', editNotification);
+                        return;
+                    }
+                    const vehicleToEdit = vehicles[index];
+
+                    editPlacaInput.value = vehicleToEdit.placa;
+                    editVeiculoInput.value = vehicleToEdit.veiculo;
+                    editCorInput.value = vehicleToEdit.cor;
+                    editNomeInput.value = vehicleToEdit.nome;
+                    editDepartamentoInput.value = vehicleToEdit.departamento;
+                   
+                    editingIndex = index;
+                    editFormContainer.classList.add('show-form');
+                    sidebar.classList.remove('open');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    showNotification('Modo de edição ativado', 'info', editNotification);
+                }
+            };
+
+            // Excluir veículo usando a placa como identificador único
+            window.deleteVehicleByPlate = (placa) => {
+                const index = vehicles.findIndex(v => v.placa === placa);
+                if (index !== -1) {
+                    if (confirm('Deseja realmente excluir este cadastro?')) {
+                        vehicles.splice(index, 1);
+                        saveVehicles();
+                        displayVehicles(vehicles);
+                        showNotification('Excluído com sucesso!', 'info', addNotification);
+                    }
+                }
+            };
+
+            // Cancelar edição
+            cancelEditBtn.addEventListener('click', () => {
+                editForm.reset();
+                editingIndex = null;
+                editFormContainer.classList.remove('show-form');
+            });
+
+            // Exibir a lista inicial ao carregar a página
+            displayVehicles(vehicles);
+        });
+    </script>
+
+</body>
+</html>
